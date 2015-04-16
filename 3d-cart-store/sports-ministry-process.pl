@@ -54,7 +54,8 @@ foreach my $field (@$fields) {
     ++$col;
 }
 
-# Read in the rest of the input
+# Read in the rest of the input; save rows that match a given item ID
+# pattern
 my @rows;
 while (my $row = $csv->getline($fh)) {
     push(@rows, $row)
@@ -119,22 +120,20 @@ open(OUT, ">processed.csv") ||
 
 # Write the first line of the output CSV: the union of all the column
 # names.
-print OUT join(",", sort(keys(%{$all_columns}))) . "\n";
+print OUT "Sport," . join(",", sort(keys(%{$all_columns}))) . "\n";
 
 # Now write all the values
 foreach my $row (@rows) {
     my $item = $$row[$itemname_column];
     my @columns = parse_itemname($item);
 
-    # Output all the values.  Must go in the same order that we output
-    # the first line.  If we don't have that value, output an empty
-    # column.  :-(
-    my $first = 1;
-    foreach my $column (sort(keys(%{$all_columns}))) {
-        print OUT ","
-            if (!$first);
-        $first = 0;
+    # Output all the values.  Always output the itemid column first.
+    print OUT $$row[$itemid_column];
 
+    # Must go in the same order that we output the first line.  If we
+    # don't have that value, output an empty column.  :-(
+    foreach my $column (sort(keys(%{$all_columns}))) {
+        print OUT ",";
         foreach my $c (@columns) {
             if ($c->{name} eq $column) {
                 my $value = $c->{value};
