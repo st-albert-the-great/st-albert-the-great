@@ -37,6 +37,7 @@ die "Must specify file"
 my $csv = Text::CSV->new();
 
 my $fh;
+print "Reading $ARGV[0]...\n";
 open($fh, $ARGV[0]) ||
     die("Can't open file $ARGV[0]");
 
@@ -59,7 +60,7 @@ foreach my $field (@$fields) {
 my @rows;
 while (my $row = $csv->getline($fh)) {
     push(@rows, $row)
-        if ($row->[$itemid_column] =~ /2015-SPR/);
+        if ($row->[$itemid_column] =~ /2015-FALL/);
 }
 close($fh);
 
@@ -115,6 +116,7 @@ foreach my $row (@rows) {
 }
 
 # Open the output CSV
+print "Writing to processed.csv...\n";
 open(OUT, ">processed.csv") ||
     die "Can't write to processed.csv";
 
@@ -149,3 +151,6 @@ foreach my $row (@rows) {
 }
 
 close($fh);
+
+print "Done!\n";
+exit(0);
