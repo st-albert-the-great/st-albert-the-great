@@ -47,11 +47,20 @@ $fields = $csv->getline($fh);
 my $col = 0;
 my $itemname_column = 0;
 my $itemid_column = 0;
+my $orderid_column = 0;
+my $orderdate_column = 0;
+my $ordertime_column = 0;
 foreach my $field (@$fields) {
     $itemname_column = $col
         if ($field eq "itemname");
     $itemid_column = $col
         if ($field eq "itemid");
+    $orderid_column = $col
+        if ($field eq "orderid");
+    $orderdate_column = $col
+        if ($field eq "odate");
+    $ordertime_column = $col
+        if ($field eq "otime");
     ++$col;
 }
 
@@ -122,15 +131,19 @@ open(OUT, ">processed.csv") ||
 
 # Write the first line of the output CSV: the union of all the column
 # names.
-print OUT "Sport," . join(",", sort(keys(%{$all_columns}))) . "\n";
+print OUT "\"Order ID\",\"Order date\",\"Order time\",Sport," . join(",", sort(keys(%{$all_columns}))) . "\n";
 
 # Now write all the values
 foreach my $row (@rows) {
     my $item = $$row[$itemname_column];
     my @columns = parse_itemname($item);
 
-    # Output all the values.  Always output the itemid column first.
-    print OUT $$row[$itemid_column];
+    # Output all the values.  Always output these first:
+    # Order ID, order date, order timestamp, order item ID
+    print OUT $$row[$orderid_column] . "," .
+        $$row[$orderdate_column] . "," .
+        $$row[$ordertime_column] . "," .
+        $$row[$itemid_column];
 
     # Must go in the same order that we output the first line.  If we
     # don't have that value, output an empty column.  :-(
