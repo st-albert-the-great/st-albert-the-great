@@ -48,11 +48,11 @@ NetMonitor::connect(1);
 
 NetMonitor::sql("CREATE TABLE locks (timestamp INTEGER PRIMARY KEY, target TEXT, pid INTEGER)");
 
-NetMonitor::sql("CREATE TABLE ping_results (timestamp INTEGER PRIMARY KEY, target TEXT, reachable INTEGER, sent INTEGER, received INTEGER, min REAL, max REAL, avg REAL, stddev REAL, uploaded INTEGER)");
+NetMonitor::sql("CREATE TABLE ping_results (id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp INTEGER, target TEXT, reachable INTEGER, sent INTEGER, received INTEGER, min REAL, avg REAL, max REAL, stddev REAL, uploaded INTEGER)");
 
-NetMonitor::sql("CREATE TABLE download_results (timestamp INTEGER PRIMARY KEY, url TEXT, reachable INTEGER, num_bytes INTEGER, seconds REAL, uploaded INTEGER)");
+NetMonitor::sql("CREATE TABLE download_results (id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp INTEGER, url TEXT, reachable INTEGER, num_bytes INTEGER, seconds REAL, uploaded INTEGER)");
 
-NetMonitor::sql("CREATE TABLE wifi_results (timestamp INTEGER PRIMARY KEY, ssid TEXT, joined INTEGER, seconds REAL, uploaded INTEGER)");
+NetMonitor::sql("CREATE TABLE wifi_results (id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp INTEGER, ssid TEXT, joined INTEGER, seconds REAL, uploaded INTEGER)");
 
 NetMonitor::disconnect();
 

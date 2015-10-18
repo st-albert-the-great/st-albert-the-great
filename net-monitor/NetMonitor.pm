@@ -6,6 +6,7 @@ use warnings;
 use DBI;
 use Exporter;
 use vars qw/@EXPORT @ISA/;
+use Data::Dumper;
 
 @ISA = qw/Exporter/;
 @EXPORT = qw/debug verbose/;
@@ -72,17 +73,38 @@ sub disconnect {
 sub get_lock {
     my $name = shift;
 
-    debug("Getting DB lock for \"$name\"\n");
+    my $pid = $$;
+    debug("Getting DB lock for \"$name\": pid $pid\n");
 
-    debug("Got DB lock for \"$name\"\n");
+    sql("BEGIN TRANSACTION");
+    my $rows = sql_select("SELECT pid FROM locks WHERE target=\"$name\"");
+
+    # How many rows did we get back?
+    my @keys = keys(%$rows);
+    my $num_locks = $#keys;
+    if ($num_locks >= 0) {
+        # Someone else has a lock -- just exit
+        verbose("Someone else has a lock -- I'll lie here, quietly, in the snow...\n");
+        exit(0);
+    }
+
+    my $timestamp = time();
+    my $human_timestamp = localtime($timestamp);
+    sql("INSERT INTO locks (timestamp, target, pid) VALUES ($timestamp, \"$name\", $pid)");
+    sql("COMMIT TRANSACTION");
+
+    debug("Got DB lock for \"$name\": pid $pid\n");
 }
 
 sub release_lock {
     my $name = shift;
 
-    debug("Releasing DB lock for \"$name\"\n");
+    my $pid = $$;
+    debug("Releasing DB lock for \"$name\": $pid\n");
 
-    debug("Released DB lock for \"$name\"\n");
+    sql("DELETE FROM locks WHERE pid=$pid");
+
+    debug("Released DB lock for \"$name\": $pid\n");
 }
 
 ###############################################################################
@@ -101,6 +123,25 @@ sub sql {
     }
 
     debug("Ran SQL: $sql\n");
+}
+
+sub sql_select {
+    my $sql = shift;
+    my @keys = @_;
+
+    debug("Running select SQL: $sql, keys: @keys\n");
+
+    my $ret = $db->selectall_hashref($sql, \@keys);
+    if (!defined($ret)) {
+        print "SQL select failure:
+  SQL: $sql
+  Error: " . $db->err . "\n";
+        die "Cannot continue";
+    }
+
+    debug("Ran select SQL: $sql\n");
+
+    return $ret;
 }
 
 ###############################################################################
@@ -122,7 +163,7 @@ sub save_ping_result {
     verbose("  target:$target, reachable:$reachable, sent:$sent, received:$received\n");
     verbose("  min:$min, avg:$avg, max:$max , stddev:$stddev\n");
 
-    sql("INSERT INTO ping_results VALUES (\"$timestamp\", \"$target\", $reachable, $sent, $received, $min, $max, $avg, $stddev, 0)");
+    sql("INSERT INTO ping_results (timestamp, target, reachable, sent, received, min, avg, max, stddev, uploaded) VALUES (\"$timestamp\", \"$target\", $reachable, $sent, $received, $min, $avg, $max, $stddev, 0)");
 
     debug("Saved ping result\n");
 }
