@@ -46,7 +46,7 @@ NetMonitor::setup(1, $debug_arg, $db_filename_arg);
 
 NetMonitor::connect(1);
 
-NetMonitor::sql("CREATE TABLE locks (timestamp INTEGER PRIMARY KEY, target TEXT, pid INTEGER)");
+NetMonitor::sql("CREATE TABLE locks (timestamp INTEGER, target TEXT, pid INTEGER)");
 
 NetMonitor::sql("CREATE TABLE ping_results (id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp INTEGER, target TEXT, reachable INTEGER, sent INTEGER, received INTEGER, min REAL, avg REAL, max REAL, stddev REAL, uploaded INTEGER)");
 
