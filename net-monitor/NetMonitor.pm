@@ -168,4 +168,37 @@ sub save_ping_result {
     debug("Saved ping result\n");
 }
 
+sub save_ping_fail {
+    my $target = shift;
+
+    NetMonitor::save_ping_result($target, 0, 0, 0, 0, 0, 0, 0);
+}
+
+###############################################################################
+
+sub save_download_result {
+    my $url = shift;
+    my $size = shift;
+    my $elapsed = shift;
+
+    my $timestamp = time();
+    my $human_timestamp = localtime($timestamp);
+    verbose("Saving download result:\n");
+    verbose("  timestamp:$human_timestamp ($timestamp)\n");
+    verbose("  url:$url\n");
+    verbose("  size:$size, elapsed:$elapsed\n");
+
+    sql("INSERT INTO download_results (timestamp, url, reachable, num_bytes, seconds,uploaded) VALUES (\"$timestamp\", \"$url\", 1, $size, $elapsed, 0)");
+
+    debug("Saved ping result\n");
+}
+
+sub save_download_fail {
+    my $url = shift;
+
+    NetMonitor::save_download_result($url, );
+}
+
+###############################################################################
+
 1;
