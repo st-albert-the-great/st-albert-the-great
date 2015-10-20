@@ -33,44 +33,36 @@ if (!$ok || $help_arg) {
 # Get a LWP object for submitting to Google
 my $browser = LWP::UserAgent->new;
 
-# Submit all ping results
-sub submit_ping_results {
-    my $submit_url = "https://docs.google.com/forms/d/1sg5giGdFUJUet92pcxY0M5YZ9BLiyeIGDZZ8av0VBRE/formResponse";
-    my $fields = {
-        id => "entry.902417770",
-        timestamp => "entry.663777382",
-        target => "entry.1792207709",
-        reachable => "entry.2088523712",
-        sent => "entry.1507539175",
-        received => "entry.861314488",
-        min => "entry.1665894311",
-        avg => "entry.530438212",
-        max => "entry.657687463",
-        stddev => "entry.1738735812",
-    };
+###############################################################################
+
+sub submit_results {
+    my $submit_url = shift;
+    my $fields = shift;
+    my $table_name = shift;
+    my $name = shift;
 
     # Get all the un-uploaded data so far
-    my $rows = NetMonitor::sql_select("SELECT * FROM ping_results WHERE uploaded=0",
+    my $rows = NetMonitor::sql_select("SELECT * FROM $table_name WHERE uploaded=0",
                                       "id");
     my @keys = sort { $a <=> $b } keys(%$rows);
 
     # Exit if there's nothing to do
     my $count = $#keys + 1;
     if ($count == 0) {
-        verbose("No ping test results to upload\n");
+        verbose("No $name results to upload\n");
         return;
     }
-    verbose("Uploading $count ping test results...\n");
+    verbose("Uploading $count $name results...\n");
 
     foreach my $key (@keys) {
-        verbose("Uploading ping result ID: $key\n");
-        submit_ping_result($submit_url, $key, $fields, $rows->{$key});
+        verbose("Uploading $name ID: $key\n");
+        submit_result($submit_url, $key, $fields, $rows->{$key});
     }
-    verbose("Uploaded $count ping test results\n");
+    verbose("Uploaded $count $name results\n");
 
-    # Use a single UPDATE statement to indicate that all these ping
+    # Use a single UPDATE statement to indicate that all these
     # result IDs have now been uploaded
-    my $sql = "UPDATE ping_results SET uploaded=1 WHERE ";
+    my $sql = "UPDATE $table_name SET uploaded=1 WHERE ";
     my $first = 1;
     foreach my $key (@keys) {
         $sql .= " OR "
@@ -81,8 +73,8 @@ sub submit_ping_results {
     NetMonitor::sql($sql);
 }
 
-# Subroutine to submit an individual ping result
-sub submit_ping_result {
+# Subroutine to submit an individual result
+sub submit_result {
     my $url = shift;
     my $id = shift;
     my $fields = shift;
@@ -105,6 +97,43 @@ sub submit_ping_result {
 }
 
 ###############################################################################
+
+# Submit all ping results
+sub submit_ping_results {
+    my $submit_url = "https://docs.google.com/forms/d/1sg5giGdFUJUet92pcxY0M5YZ9BLiyeIGDZZ8av0VBRE/formResponse";
+    my $fields = {
+        id => "entry.902417770",
+        timestamp => "entry.663777382",
+        target => "entry.1792207709",
+        reachable => "entry.2088523712",
+        sent => "entry.1507539175",
+        received => "entry.861314488",
+        min => "entry.1665894311",
+        avg => "entry.530438212",
+        max => "entry.657687463",
+        stddev => "entry.1738735812",
+    };
+
+    submit_results($submit_url, $fields, "ping_results", "ping test");
+}
+
+###############################################################################
+
+sub submit_bandwidth_results {
+    my $submit_url = "https://docs.google.com/forms/d/19DU6EFRfha3CqhNkZhOT4x3zVuDbYkdVUeKiCCR9_Hc/formResponse";
+    my $fields = {
+        id => "entry.1483026486",
+        timestamp => "entry.171835645",
+        url => "entry.2029331697",
+        reachable => "entry.1101766613",
+        num_bytes => "entry.1814414357",
+        seconds => "entry.274384252",
+    };
+
+    submit_results($submit_url, $fields, "download_results", "download test");
+}
+
+###############################################################################
 # Main
 ###############################################################################
 
@@ -117,7 +146,7 @@ NetMonitor::get_lock("upload-results");
 submit_ping_results();
 
 # Bandwidth tests
-#submit_bandwidth_results();
+submit_bandwidth_results();
 
 # Wifi ests
 #submit_wifi_results();
