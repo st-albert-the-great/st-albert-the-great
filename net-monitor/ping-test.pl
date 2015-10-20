@@ -24,7 +24,7 @@ my $ok = Getopt::Long::GetOptions("database=s", \$db_filename_arg,
                                   "verbose!" => \$verbose_arg,
                                   "help|h" => \$help_arg);
 if (!$ok || $help_arg) {
-    print "$0 [--sqlite3=SQLITE3_BIN] [--database=DB_FILENAME] [--target=IP_OR_NAME]\n";
+    print "$0 [--database=DB_FILENAME] [--target=IP_OR_NAME]\n";
     exit($ok);
 }
 
@@ -32,7 +32,7 @@ if (!$ok || $help_arg) {
 
 NetMonitor::setup($verbose_arg, $debug_arg, $db_filename_arg);
 
-# See if anyone else is running the ping test right now
+# See if anyone else is running the test right now
 NetMonitor::connect();
 NetMonitor::get_lock("ping-test");
 
@@ -43,8 +43,8 @@ debug("Running ping test to $target_arg...\n");
 my $rc = system("ping -c 3 $target_arg > $file");
 $rc = ($rc >> 8);
 if (0 != $rc) {
-    debug("ping test failed: exist result: $rc\n");
-    NetMonitor::save_ping_result($target_arg, 0, 0, 0, 0, 0, 0, 0);
+    debug("ping test failed: exit result: $rc\n");
+    NetMonitor::save_ping_fail($target_arg);
 } else {
     debug("ping test suceeded -- reading results...\n");
     if (open(FILE, $file)) {
