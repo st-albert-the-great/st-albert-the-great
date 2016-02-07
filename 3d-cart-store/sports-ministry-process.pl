@@ -52,15 +52,15 @@ my $orderdate_column = 0;
 my $ordertime_column = 0;
 foreach my $field (@$fields) {
     $itemname_column = $col
-        if ($field eq "itemname");
+	if ($field eq "itemname");
     $itemid_column = $col
-        if ($field eq "itemid");
+	if ($field eq "itemid");
     $orderid_column = $col
-        if ($field eq "orderid");
+	if ($field eq "orderid");
     $orderdate_column = $col
-        if ($field eq "odate");
+	if ($field eq "odate");
     $ordertime_column = $col
-        if ($field eq "otime");
+	if ($field eq "otime");
     ++$col;
 }
 
@@ -69,7 +69,7 @@ foreach my $field (@$fields) {
 my @rows;
 while (my $row = $csv->getline($fh)) {
     push(@rows, $row)
-        if ($row->[$itemid_column] =~ /2015-FALL/);
+	if ($row->[$itemid_column] =~ /2015-FALL/);
 }
 close($fh);
 
@@ -88,21 +88,21 @@ sub parse_itemname {
     my @columns;
     # There are two forms
     foreach my $field (@fields) {
-        # First form: <b>Field name</b>&nbsp;Label:value
-        if ($field =~ m@<b>(.+?)</b>&nbsp;(.+?):(.+?)$@) {
-            push(@columns, {
-                name => $1,
-                label => $2,
-                value => $3,
-                });
-        }
-        # Second form: <b>Field name:</b>&nbsp;value
-        elsif ($field =~ m@<b>(.+?):</b>&nbsp;(.+?)$@) {
-            push(@columns, {
-                name => $1,
-                value => $2,
-                });
-        }
+	# First form: <b>Field name</b>&nbsp;Label:value
+	if ($field =~ m@<b>(.+?)</b>&nbsp;(.+?):(.+?)$@) {
+	    push(@columns, {
+		name => $1,
+		label => $2,
+		value => $3,
+		});
+	}
+	# Second form: <b>Field name:</b>&nbsp;value
+	elsif ($field =~ m@<b>(.+?):</b>&nbsp;(.+?)$@) {
+	    push(@columns, {
+		name => $1,
+		value => $2,
+		});
+	}
     }
 
     return @columns;
@@ -120,7 +120,7 @@ foreach my $row (@rows) {
     my @columns = parse_itemname($item);
 
     foreach my $c (@columns) {
-        $all_columns->{$c->{name}} = 1;
+	$all_columns->{$c->{name}} = 1;
     }
 }
 
@@ -141,24 +141,24 @@ foreach my $row (@rows) {
     # Output all the values.  Always output these first:
     # Order ID, order date, order timestamp, order item ID
     print OUT $$row[$orderid_column] . "," .
-        $$row[$orderdate_column] . "," .
-        $$row[$ordertime_column] . "," .
-        $$row[$itemid_column];
+	$$row[$orderdate_column] . "," .
+	$$row[$ordertime_column] . "," .
+	$$row[$itemid_column];
 
     # Must go in the same order that we output the first line.  If we
     # don't have that value, output an empty column.  :-(
     foreach my $column (sort(keys(%{$all_columns}))) {
-        print OUT ",";
-        foreach my $c (@columns) {
-            if ($c->{name} eq $column) {
-                my $value = $c->{value};
-                if ($value =~ /,/) {
-                    print OUT "\"$value\"";
-                } else {
-                    print OUT "$value";
-                }
-            }
-        }
+	print OUT ",";
+	foreach my $c (@columns) {
+	    if ($c->{name} eq $column) {
+		my $value = $c->{value};
+		if ($value =~ /,/) {
+		    print OUT "\"$value\"";
+		} else {
+		    print OUT "$value";
+		}
+	    }
+	}
     }
     print OUT "\n";
 }
