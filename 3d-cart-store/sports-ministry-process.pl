@@ -32,6 +32,8 @@ use Data::Dumper;
 die "Must specify file"
     if (!defined($ARGV[0]));
 
+my $order_search_key = "2016-SPRING";
+
 ###################################################################
 
 my $csv = Text::CSV->new();
@@ -45,11 +47,11 @@ open($fh, $ARGV[0]) ||
 my $fields;
 $fields = $csv->getline($fh);
 my $col = 0;
-my $itemname_column = 0;
-my $itemid_column = 0;
-my $orderid_column = 0;
-my $orderdate_column = 0;
-my $ordertime_column = 0;
+my $itemname_column = -1;
+my $itemid_column = -1;
+my $orderid_column = -1;
+my $orderdate_column = -1;
+my $ordertime_column = -1;
 foreach my $field (@$fields) {
     $itemname_column = $col
 	if ($field eq "itemname");
@@ -64,12 +66,25 @@ foreach my $field (@$fields) {
     ++$col;
 }
 
+sub check {
+    my $name = shift;
+    my $value = eval("\$$name");
+    die "Did not find column for $name"
+        if (!defined($value) || $value < 0);
+}
+
+check("itemid_column");
+check("itemname_column");
+check("orderid_column");
+check("orderdate_column");
+check("ordertime_column");
+
 # Read in the rest of the input; save rows that match a given item ID
 # pattern
 my @rows;
 while (my $row = $csv->getline($fh)) {
     push(@rows, $row)
-	if ($row->[$itemid_column] =~ /2015-FALL/);
+	if ($row->[$itemid_column] =~ /$order_search_key/);
 }
 close($fh);
 
