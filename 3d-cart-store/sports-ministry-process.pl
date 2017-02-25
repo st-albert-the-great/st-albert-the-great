@@ -90,6 +90,26 @@ close($fh);
 
 ###################################################################
 
+sub normalize_name {
+    my $val = shift;
+
+    $val =~ s/:$//;
+
+    # Return some common field errors that have cropped up over the
+    # years.  E.g., we accidentally put in "Gender" instead of "Sex" a
+    # few times.  So consolidate all "Gender" fields into "Sex".
+    return "Athlete sex"
+	if ($val =~ /^Athlete gender$/i);
+    return "Parent #1 email"
+	if ($val =~ /^Parent \#1.+email/i);
+    return "Parent #2 email (optional)"
+	if ($val =~ /^Parent \#2.+email/i);
+    return "Parent #2 phone number (optional)"
+	if ($val =~ /^Parent \#2.+phone number/i);
+
+    return $val;
+}
+
 sub parse_itemname {
     my $item = shift;
 
@@ -105,17 +125,24 @@ sub parse_itemname {
     foreach my $field (@fields) {
 	# First form: <b>Field name</b>&nbsp;Label:value
 	if ($field =~ m@<b>(.+?)</b>&nbsp;(.+?):(.+?)$@) {
+	    my $name = normalize_name($1);
+	    my $label = $2;
+	    my $value = $3;
+
 	    push(@columns, {
-		name => $1,
-		label => $2,
-		value => $3,
+		name => $name,
+		label => $label,
+		value => $value,
 		});
 	}
 	# Second form: <b>Field name:</b>&nbsp;value
 	elsif ($field =~ m@<b>(.+?):</b>&nbsp;(.+?)$@) {
+	    my $name = normalize_name($1);
+	    my $value = $2;
+
 	    push(@columns, {
-		name => $1,
-		value => $2,
+		name => $name,
+		value => $value,
 		});
 	}
     }
