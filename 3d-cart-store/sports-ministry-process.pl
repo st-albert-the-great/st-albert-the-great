@@ -70,7 +70,7 @@ sub check {
     my $name = shift;
     my $value = eval("\$$name");
     die "Did not find column for $name"
-        if (!defined($value) || $value < 0);
+	if (!defined($value) || $value < 0);
 }
 
 check("itemid_column");
