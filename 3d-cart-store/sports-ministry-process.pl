@@ -32,7 +32,7 @@ use Data::Dumper;
 die "Must specify file"
     if (!defined($ARGV[0]));
 
-my $order_search_key = "2016-WINTER";
+my $order_search_key = "2017-SPRING";
 
 ###################################################################
 
