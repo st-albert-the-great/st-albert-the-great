@@ -100,6 +100,8 @@ sub normalize_name {
     # few times.  So consolidate all "Gender" fields into "Sex".
     return "Athlete sex"
 	if ($val =~ /^Athlete gender$/i);
+    return "Athlete grade"
+	if ($val =~ /^Athlete grade during season$/i);
     return "Parent #1 email"
 	if ($val =~ /^Parent \#1.+email/i);
     return "Parent #2 email (optional)"
