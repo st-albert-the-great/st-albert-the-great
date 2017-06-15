@@ -123,10 +123,10 @@ sub parse_itemname {
     shift(@fields);
 
     my @columns;
-    # There are two forms
+    # There are multiple forms
     foreach my $field (@fields) {
-	# First form: <b>Field name</b>&nbsp;Label:value
-	if ($field =~ m@<b>(.+?)</b>&nbsp;(.+?):(.+?)$@) {
+	# First form: <b>Field name</b>&nbsp;Label:&nbsp;value
+	if ($field =~ m@<b>(.+?)</b>&nbsp;(.+?):&nbsp;(.+?)$@) {
 	    my $name = normalize_name($1);
 	    my $label = $2;
 	    my $value = $3;
@@ -137,7 +137,19 @@ sub parse_itemname {
 		value => $value,
 		});
 	}
-	# Second form: <b>Field name:</b>&nbsp;value
+	# Second form: <b>Field name</b>&nbsp;Label:value
+	elsif ($field =~ m@<b>(.+?)</b>&nbsp;(.+?):(.+?)$@) {
+	    my $name = normalize_name($1);
+	    my $label = $2;
+	    my $value = $3;
+
+	    push(@columns, {
+		name => $name,
+		label => $label,
+		value => $value,
+		});
+	}
+	# Third form: <b>Field name:</b>&nbsp;value
 	elsif ($field =~ m@<b>(.+?):</b>&nbsp;(.+?)$@) {
 	    my $name = normalize_name($1);
 	    my $value = $2;
