@@ -1,8 +1,6 @@
 #!/usr/bin/env python3.6
 
-import datetime
 import csv
-import re
 
 # A Google Form was used to ask parents which date(s) would work for
 # them for a parent internet safety seminar.  In the resulting CSV,
