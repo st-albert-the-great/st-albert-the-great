@@ -6,6 +6,8 @@ import logging
 import sys
 import select
 
+debuggging = False
+
 #######################################################################
 
 import pyaudio
@@ -31,6 +33,8 @@ green  = 21845
 yellow = 10000
 blue   = 43690
 
+#######################################################################
+
 def get_bridge():
     # Disable annoying output from phue library
     logger = logging.getLogger('phue')
@@ -53,15 +57,6 @@ def load_lights(bridge):
         light.on = False
 
     return lights
-
-def set(bridge, lights):
-    l = lights[0]
-    l.on = True
-    l.brightness = 255
-    l.hue = blue
-    l.sat = 255
-    time.sleep(5)
-    exit()
 
 def hue_add(hue, val):
     h = (int(hue) + val) % 65535
@@ -141,14 +136,6 @@ def slow_blink_one(bridge, light, hue, num_times):
     blink_one(bridge=bridge, light=light, hue=hue, num_times=num_times,
               light_time=0.5, dark_time=0.4)
 
-def set_one(bridge, light, hue, bright):
-    light.transitiontime = 1
-
-    light.on = True
-    light.hue = hue
-    b = min(1, int(bright))
-    light.brightness = b
-
 #######################################################################
 
 def root_mean_square(block):
@@ -156,6 +143,7 @@ def root_mean_square(block):
     rms = numpy.sqrt((d*d).sum()/len(d))
     return rms
 
+# Open the microphone audio stream
 def open_stream(pya):
     stream = pya.open(format=FORMAT,
                       channels=CHANNELS,
@@ -166,12 +154,13 @@ def open_stream(pya):
 
 #---------------------------------------------------------------------
 
-max_rms_value = 13000
+# At Career Day, I saw a max of about 22K RMS
+max_rms_value = 22000
 hue_range = red_hi - green
 bright_range = 253
 
 def color_me(rms):
-    # Range from gree to red_hi
+    # Range from green to red_hi
     # Brightness from 1 to 254
 
     fraction_of_max = min(1, rms / max_rms_value)
@@ -207,7 +196,6 @@ def player(bridge, light, num):
     pya = pyaudio.PyAudio()
     stream = open_stream(pya)
 
-    min_rms =  9999999
     max_rms = -9999999
     for i in range(int(RATE / CHUNK * seconds)):
         try:
@@ -216,13 +204,13 @@ def player(bridge, light, num):
 
             if rms > max_rms:
                 max_rms = rms
-                if False:
+                if debugging:
                     print("New max: {}".format(max_rms))
 
             hue, bright = color_me(rms)
             light.hue = hue
             light.brightness = bright
-            if False:
+            if debugging:
                 print("RMS={r}, Hue={h}, bright={b}"
                       .format(r=rms, h=hue, b=bright))
         except:
@@ -244,12 +232,11 @@ def main():
     lights = load_lights(bridge)
 
     # Time delay
-    if True:
-        print('')
-        print("Hit ENTER to start")
-        back_n_forth(bridge, lights, num_times=999999)
-        all_blink(bridge, lights, red_lo, num_times=3,
-                  light_time=0.1, dark_time=0.2)
+    print('')
+    print("Hit ENTER to start")
+    back_n_forth(bridge, lights, num_times=999999)
+    all_blink(bridge, lights, red_lo, num_times=3,
+              light_time=0.1, dark_time=0.2)
 
     player1_light = lights[0]
     player2_light = lights[3]
@@ -275,4 +262,5 @@ def main():
     print("Thanks for playing!")
     print('')
 
+# Run the game!
 main()
